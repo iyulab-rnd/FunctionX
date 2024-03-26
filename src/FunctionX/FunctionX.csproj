@@ -1,12 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+	<TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 	<Description>Implements Excel-like formulas, supporting dynamic calculations with variable parameter mapping.</Description>
+	<Title>FunctionX</Title>
+	<PackageProjectUrl>https://github.com/iyulab-rnd/FunctionX</PackageProjectUrl>
   </PropertyGroup>
-
+	
 	<ItemGroup>
 		<PackageReference Include="NCalcSync" Version="3.12.0" />
 	</ItemGroup>
