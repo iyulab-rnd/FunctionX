@@ -7,20 +7,20 @@ namespace FunctionX.Tests;
 public class FxSumTests
 {
     [Fact]
-    public void TestEvaluateSum()
+    public async Task TestEvaluateSum()
     {
         // Arrange
         var results = new Dictionary<string, object?>();
 
         // Act
-        var result = Fx.Evaluate("1 + 3", results);
+        var result = await Fx.EvaluateAsync("1 + 3", results);
 
         // Assert
         Assert.Equal(4.0, Convert.ToDouble(result));
     }
 
     [Fact]
-    public void TestEvaluateSumValues()
+    public async Task TestEvaluateSumValues()
     {
         // Arrange
         var value1 = 1;
@@ -32,7 +32,7 @@ public class FxSumTests
         };
 
         // Act
-        var result = Fx.Evaluate("1 + 3 + value1 + value2", results);
+        var result = await Fx.EvaluateAsync("1 + 3 + @value1 + @value2", results);
 
         var v = 1.0 + 3 + value1 + value3;
         // Assert
@@ -40,7 +40,7 @@ public class FxSumTests
     }
 
     [Fact]
-    public void TestEvaluateSumValuesWithFunc()
+    public async Task TestEvaluateSumValuesWithFunc()
     {
         // Arrange
         var value1 = 1;
@@ -52,7 +52,7 @@ public class FxSumTests
         };
 
         // Act
-        var result = Fx.Evaluate("1 + 3 + value1 + value2 + SUM(5, 1)", results);
+        var result = await Fx.EvaluateAsync("1 + 3 + @value1 + @value2 + SUM(5, 1)", results);
 
         var v = 1.0 + 3 + value1 + value3 + 5 + 1;
         // Assert
@@ -60,20 +60,20 @@ public class FxSumTests
     }
 
     [Fact]
-    public void TestEvaluateSumWithConstants()
+    public async Task TestEvaluateSumWithConstants()
     {
         // Arrange
         var results = new Dictionary<string, object?>();
 
         // Act
-        var result = Fx.Evaluate("SUM(1, 3)", results);
+        var result = await Fx.EvaluateAsync("SUM(1, 3)", results);
 
         // Assert
         Assert.Equal(4.0, Convert.ToDouble(result));
     }
 
     [Fact]
-    public void TestEvaluateSumWithVariable()
+    public async Task TestEvaluateSumWithVariable()
     {
         // Arrange
         var results = new Dictionary<string, object?>
@@ -82,14 +82,14 @@ public class FxSumTests
         };
 
         // Act
-        var result = Fx.Evaluate("SUM(5, addValue)", results);
+        var result = await Fx.EvaluateAsync("SUM(5, @addValue)", results);
 
         // Assert
         Assert.Equal(15.0, Convert.ToDouble(result));
     }
 
     [Fact]
-    public void TestEvaluateSumWithArray()
+    public async Task TestEvaluateSumWithArray()
     {
         // Arrange
         var results = new Dictionary<string, object?>
@@ -98,22 +98,55 @@ public class FxSumTests
         };
 
         // Act
-        var result = Fx.Evaluate("SUM(numbers)", results);
+        var result = await Fx.EvaluateAsync("SUM(@numbers)", results);
 
         // Assert
         Assert.Equal(15.0, Convert.ToDouble(result));
     }
 
     [Fact]
-    public void TestEvaluateSumWithMultipleParameters()
+    public async Task TestEvaluateSumWithMultipleParameters()
     {
         // Arrange
         var results = new Dictionary<string, object?>();
 
         // Act
-        var result = Fx.Evaluate("SUM(1, 2, 3, 4, 5, 6)", results);
+        var result = await Fx.EvaluateAsync("SUM(1, 2, 3, 4, 5, 6)", results);
 
         // Assert
         Assert.Equal(21.0, Convert.ToDouble(result));
+    }
+
+    [Fact]
+    public async Task TestEvaluateComplexArithmetic()
+    {
+        // Arrange
+        var results = new Dictionary<string, object?>()
+        {
+            { "valueA", 10 },
+            { "valueB", 5 }
+        };
+
+        // Act
+        var result = await Fx.EvaluateAsync("(@valueA + 2) * 3 - @valueB / 2", results);
+
+        // Assert
+        Assert.Equal(((10 + 2) * 3 - 5 / 2.0), Convert.ToDouble(result));
+    }
+
+    [Fact]
+    public async Task TestEvaluateArithmeticWithArraySum()
+    {
+        // Arrange
+        var results = new Dictionary<string, object?>
+        {
+            { "numbers", new object[] { 1, 2, 3 } }
+        };
+
+        // Act
+        var result = await Fx.EvaluateAsync("(SUM(@numbers) + 2) * 3", results);
+
+        // Assert
+        Assert.Equal(((1 + 2 + 3 + 2) * 3), Convert.ToDouble(result));
     }
 }

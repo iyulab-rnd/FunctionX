@@ -6,11 +6,6 @@ The FunctionX library implements Excel-like formula features in C#. It allows us
 
 The FunctionX library offers the following features:
 
-- Mathematical and statistical operations: `SUM`, `AVERAGE`, `MIN`, `MAX`, etc.
-- String operations: `CONCAT`, `LEFT`, `RIGHT`, `MID`, `LEN`, `TRIM`, etc.
-- Logical operations: Support for the `IF` function.
-- Range and array handling: `INDEX`, `COUNT`, etc.
-- Variable and parameter substitution: Dynamic value calculation based on parameters passed to functions.
 
 ## Usage
 
@@ -25,23 +20,53 @@ Here are some examples of using the FunctionX library:
 
 ```csharp
 // Basic mathematical operation
-var result = Fx.Evaluate("1 + 2 + 3", new Dictionary<string, object?>());
+var result = await Fx.EvaluateAsync("1 + 2 + 3");
 
 // Calculate the average value in an array
-var results = new Dictionary<string, object?>
+var parameters = new Dictionary<string, object?>
 {
     { "myArray", new object[] {1, 2, 3, 4, 5} }
 };
-var average = Fx.Evaluate("AVERAGE(myArray)", results);
+var average = await Fx.EvaluateAsync("AVERAGE(@myArray)", parameters);
 
 // Conditional logic
-var conditionResults = new Dictionary<string, object?>
+var parameters = new Dictionary<string, object?>
 {
     { "value1", 10 },
     { "value2", 20 }
 };
-var ifResult = Fx.Evaluate("IF(value1 > value2, 'Yes', 'No')", conditionResults);
+var ifResult = await Fx.EvaluateAsync("IF(@value1 > @value2, \"Yes\", \"No\")", parameters);
 ```
+
+## Implemented Functions
+| Function Name | Description |
+|---------------|-------------|
+| `SUM` | Calculates the sum of numeric values. |
+| `AVERAGE` | Calculates the average of numeric values. |
+| `MAX` | Finds the maximum value among numeric values. |
+| `MIN` | Finds the minimum value among numeric values. |
+| `COUNT` | Counts the number of numeric values. |
+| `COUNTA` | Counts the number of non-empty values. |
+| `AND` | Returns true if all values are true. |
+| `OR` | Returns true if at least one value is true. |
+| `NOT` | Returns true if the value is false. |
+| `XOR` | Returns true if an odd number of values are true. |
+| `IF` | Returns one of two values depending on a condition. |
+| `IFS` | Returns the result of the first true condition among multiple conditions. |
+| `SWITCH` | Returns a value based on given cases or provides a default value. |
+| `CONCAT` | Concatenates string values. |
+| `LEFT` | Returns a specified number of characters from the beginning of a string. |
+| `RIGHT` | Returns a specified number of characters from the end of a string. |
+| `MID` | Returns a specified number of characters from a string starting at a specified position. |
+| `TRIM` | Removes leading and trailing whitespace from a string. |
+| `UPPER` | Converts a string to uppercase. |
+| `LOWER` | Converts a string to lowercase. |
+| `PROPER` | Converts the first letter of each word in a string to uppercase. |
+| `REPLACE` | Replaces occurrences of a specified substring within a string with another substring. |
+| `LEN` | Returns the length of a string. |
+| `INDEX` | Returns the value at a specified position in an array or dictionary. |
+| `VLOOKUP` | Searches for a value in the first column of a range and returns a value in the same row from a specified column. |
+| `UNIQUE` | Returns an array of unique values with duplicates removed. |
 
 ## Installation
 
@@ -49,8 +74,7 @@ This library is not currently available via NuGet. To use the library, you will 
 
 ## Requirements
 
-- .NET 6 or higher
-- NCalc library
+- netstandard2.1
 
 ## Contributing
 

@@ -7,46 +7,46 @@ namespace FunctionX.Tests;
 public class FxConcatTests
 {
     [Fact]
-    public void TestConcatFunction_WithStrings()
+    public async Task TestConcatFunction_WithStrings()
     {
         // Arrange
         var parameters = new Dictionary<string, object?> { { "str1", "Hello, " }, { "str2", "world!" } };
 
         // Act
-        var result = Fx.Evaluate("CONCAT(str1, str2)", parameters);
+        var result = await Fx.EvaluateAsync("CONCAT(@str1, @str2)", parameters);
 
         // Assert
         Assert.Equal("Hello, world!", result);
     }
 
     [Fact]
-    public void TestConcatFunction_WithNumbers()
+    public async Task TestConcatFunction_WithNumbers()
     {
         // Arrange
         var parameters = new Dictionary<string, object?> { { "num1", 123 }, { "num2", 456 } };
 
         // Act
-        var result = Fx.Evaluate("CONCAT(num1, num2)", parameters);
+        var result = await Fx.EvaluateAsync("CONCAT(@num1, @num2)", parameters);
 
         // Assert
         Assert.Equal("123456", result);
     }
 
     [Fact]
-    public void TestConcatFunction_WithNull()
+    public async Task TestConcatFunction_WithNull()
     {
         // Arrange
         var parameters = new Dictionary<string, object?> { { "str1", "Hello, " }, { "str2", null } };
 
         // Act
-        var result = Fx.Evaluate("CONCAT(str1, str2)", parameters);
+        var result = await Fx.EvaluateAsync("CONCAT(@str1, @str2)", parameters);
 
         // Assert
         Assert.Equal("Hello, ", result);
     }
 
     [Fact]
-    public void TestConcatFunction_MultipleParameters()
+    public async Task TestConcatFunction_MultipleParameters()
     {
         // Arrange
         var parameters = new Dictionary<string, object?>
@@ -58,14 +58,31 @@ public class FxConcatTests
             };
 
         // Act
-        var result = Fx.Evaluate("CONCAT(str1, str2, num1, num2)", parameters);
+        var result = await Fx.EvaluateAsync("CONCAT(@str1, @str2, @num1, @num2)", parameters);
 
         // Assert
         Assert.Equal("Hello, world!123456", result);
     }
 
     [Fact]
-    public void TestConcatFunction_WithIndexResult()
+    public async Task TestConcatEscape()
+    {
+        // Arrange
+        var parameters = new Dictionary<string, object?>
+            {
+                { "name", "John" },
+                { "age", 30 }
+            };
+
+        // Act
+        var result = await Fx.EvaluateAsync("CONCAT(\"@name is \", @name)", parameters);
+
+        // Assert
+        Assert.Equal("@name is John", result);
+    }
+
+    [Fact]
+    public async Task TestConcatFunction_WithIndexResult()
     {
         // Arrange
         var range = new List<Dictionary<string, object?>>
@@ -77,11 +94,11 @@ public class FxConcatTests
         {
             { "range", range },
             { "rowIndex", 1 },
-            { "columnIndex", 0 }
+            { "columnIndex", 1 }
         };
 
         // Act
-        var result = Fx.Evaluate("CONCAT(INDEX(range, rowIndex, columnIndex), ' is ', INDEX(range, rowIndex, columnIndex+1))", parameters);
+        var result = await Fx.EvaluateAsync("CONCAT(INDEX(@range, @rowIndex, @columnIndex), \" is \", INDEX(@range, @rowIndex, @columnIndex+1))", parameters);
 
         // Assert
         Assert.Equal("John is 30", result);

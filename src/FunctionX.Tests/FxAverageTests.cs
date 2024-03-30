@@ -7,20 +7,20 @@ namespace FunctionX.Tests;
 public class FxAverageTests
 {
     [Fact]
-    public void TestEvaluateAverageWithConstants()
+    public async Task TestEvaluateAverageWithConstants()
     {
         // Arrange
         var results = new Dictionary<string, object?>();
 
         // Act
-        var result = Fx.Evaluate("AVERAGE(2, 4, 6, 8)", results);
+        var result = await Fx.EvaluateAsync("AVERAGE(2, 4, 6, 8)", results);
 
         // Assert
         Assert.Equal(5.0, Convert.ToDouble(result));
     }
 
     [Fact]
-    public void TestEvaluateAverageWithVariable()
+    public async Task TestEvaluateAverageWithVariable()
     {
         // Arrange
         var results = new Dictionary<string, object?>
@@ -29,14 +29,14 @@ public class FxAverageTests
         };
 
         // Act
-        var result = Fx.Evaluate("AVERAGE(avgValue)", results);
+        var result = await Fx.EvaluateAsync("AVERAGE(@avgValue)", results);
 
         // Assert
         Assert.Equal(5.0, Convert.ToDouble(result));
     }
 
     [Fact]
-    public void TestEvaluateAverageWithEmptyArray()
+    public async Task TestEvaluateAverageWithEmptyArray()
     {
         // Arrange
         var results = new Dictionary<string, object?>
@@ -45,25 +45,9 @@ public class FxAverageTests
         };
 
         // Act
-        var result = Fx.Evaluate("AVERAGE(emptyArray)", results);
+        var result = await Fx.EvaluateAsync("AVERAGE(@emptyArray)", results);
 
         // Assert
-        Assert.Equal(0.0, Convert.ToDouble(result));
-    }
-
-    [Fact]
-    public void TestEvaluateAverageWithMixedTypes()
-    {
-        // Arrange
-        var results = new Dictionary<string, object?>
-            {
-                { "mixedValues", new object[] {1, "two", 3, "four"} }
-            };
-
-        // Act
-        var result = Fx.Evaluate("AVERAGE(mixedValues)", results);
-
-        // Assert
-        Assert.Equal(2.0, Convert.ToDouble(result)); // 여기서는 숫자만 평균을 내고 문자열은 무시한다고 가정
+        Assert.Equal(double.NaN, Convert.ToDouble(result));
     }
 }

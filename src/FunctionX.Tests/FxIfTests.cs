@@ -1,3 +1,5 @@
+using Microsoft.CodeAnalysis.Scripting;
+
 namespace FunctionX.Tests;
 
 /// <summary>
@@ -7,59 +9,69 @@ namespace FunctionX.Tests;
 public class FxIfTests
 {
     [Fact]
-    public void TestIfFunction_WhenConditionIsTrue_ReturnTrueValue()
+    public async Task TestIfFunction_WhenConditionIsTrue_ReturnTrueValue()
     {
         // Arrange
         var parameters = new Dictionary<string, object?>();
 
         // Act
-        var result = Fx.Evaluate("IF(true, 'Yes', 'No')", parameters);
+        var result = await Fx.EvaluateAsync("IF(true, \"Yes\", \"No\")", parameters);
 
         // Assert
         Assert.Equal("Yes", result);
     }
 
     [Fact]
-    public void TestIfFunction_WhenConditionIsFalse_ReturnFalseValue()
+    public async Task TestIfFunction_WhenConditionIsFalse_ReturnFalseValue()
     {
         // Arrange
         var parameters = new Dictionary<string, object?>();
 
         // Act
-        var result = Fx.Evaluate("IF(false, 'Yes', 'No')", parameters);
+        var result = await Fx.EvaluateAsync("IF(false, \"Yes\", \"No\")", parameters);
 
         // Assert
         Assert.Equal("No", result);
     }
 
     [Fact]
-    public void TestIfFunction_WhenConditionIsNull_ReturnDefaultValue()
+    public async Task TestIfFunction_WhenLogical()
     {
         // Arrange
         var parameters = new Dictionary<string, object?>();
 
         // Act
-        var result = Fx.Evaluate("IF(null, 'Yes', 'No')", parameters);
+        var result = await Fx.EvaluateAsync("IF(1 > 5, \"hello\", \"world\")", parameters);
+
+        // Assert
+        Assert.Equal("world", result);
+    }
+
+    [Fact]
+    public async Task TestIfFunction_WhenConditionIsNull_ReturnDefaultValue()
+    {
+        // Arrange
+        var parameters = new Dictionary<string, object?>();
+        var result = await Fx.EvaluateAsync("IF(null, \"Yes\", \"No\")", parameters);
 
         // Assert
         Assert.Equal("No", result);
     }
 
     [Fact]
-    public void TestIfFunction_WhenConditionIsNonBoolean_ReturnDefaultValue()
+    public async Task TestIfFunction_WhenConditionIsNonBoolean_ReturnDefaultValue()
     {
         // Arrange
         var parameters = new Dictionary<string, object?>();
 
-        // Act
-        var result = Fx.Evaluate("IF(123, 'Yes', 'No')", parameters);
+        var result = await Fx.EvaluateAsync("IF(123, \"Yes\", \"No\")", parameters);
 
         // Assert
-        Assert.Equal("No", result);
+        Assert.Equal("Yes", result);
     }
 
     [Fact]
-    public void TestComplexFunction_WithVariables()
+    public async Task TestComplexFunction_WithVariables()
     {
         // Arrange
         var parameters = new Dictionary<string, object?>
@@ -70,9 +82,26 @@ public class FxIfTests
             };
 
         // Act
-        var result = Fx.Evaluate("IF(var1 > var2, CONCAT('var1 is greater than var2, and var3 is ', var3), 'Condition is false')", parameters);
+        var result = await Fx.EvaluateAsync("IF(@var1 > @var2, CONCAT(\"var1 is greater than var2, and var3 is \", @var3), \"Condition is false\")", parameters);
 
         // Assert
         Assert.Equal("var1 is greater than var2, and var3 is 20", result);
+    }
+
+    [Fact]
+    public async Task TestLogical()
+    {
+        // Arrange
+        var parameters = new Dictionary<string, object?>
+            {
+                { "var1", 10 },
+                { "var2", 5 }
+            };
+
+        // Act
+        var result = await Fx.EvaluateAsync("IF(@var1 > @var2, \"var1 is greater than var2.\",\"var2 is greater than var1.\")", parameters);
+
+        // Assert
+        Assert.Equal("var1 is greater than var2.", result);
     }
 }

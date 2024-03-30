@@ -7,20 +7,20 @@ namespace FunctionX.Tests;
 public class FxMinTests
 {
     [Fact]
-    public void TestEvaluateMinWithConstants()
+    public async void TestEvaluateMinWithConstants()
     {
         // Arrange
         var results = new Dictionary<string, object?>();
 
         // Act
-        var result = Fx.Evaluate("MIN(10, 20, 5, 15)", results);
+        var result = await Fx.EvaluateAsync("MIN(10, 20, 5, 15)", results);
 
         // Assert
         Assert.Equal(5.0, Convert.ToDouble(result));
     }
 
     [Fact]
-    public void TestEvaluateMinWithVariable()
+    public async void TestEvaluateMinWithVariable()
     {
         // Arrange
         var results = new Dictionary<string, object?>
@@ -29,7 +29,7 @@ public class FxMinTests
         };
 
         // Act
-        var result = Fx.Evaluate("MIN(minValues)", results);
+        var result = await Fx.EvaluateAsync("MIN(@minValues)", results);
 
         // Assert
         Assert.Equal(5.0, Convert.ToDouble(result));
@@ -37,7 +37,7 @@ public class FxMinTests
 
 
     [Fact]
-    public void TestEvaluateMinWithEmptyArray()
+    public async void TestEvaluateMinWithEmptyArray()
     {
         // Arrange
         var results = new Dictionary<string, object?>
@@ -46,24 +46,24 @@ public class FxMinTests
         };
 
         // Act
-        var result = Fx.Evaluate("MIN(emptyArray)", results);
+        var result = await Fx.EvaluateAsync("MIN(@emptyArray)", results);
 
         // Assert
-        Assert.Null(result);
+        Assert.Equal(double.NaN, Convert.ToDouble(result));
     }
 
 
     [Fact]
-    public void TestEvaluateMinWithNullValues()
+    public async void TestEvaluateMinWithNullValues()
     {
         // Arrange
         var results = new Dictionary<string, object?>
         {
-            { "nullValues", new object[] {10, null, 5, null, 15} }
+            { "nullValues", new object?[] {10, null, 5, null, 15} }
         };
 
         // Act
-        var result = Fx.Evaluate("MIN(nullValues)", results);
+        var result = await Fx.EvaluateAsync("MIN(@nullValues)", results);
 
         // Assert
         // 배열에 null이 포함되어 있더라도 유효한 숫자 값만을 고려하여 최소값을 계산해야 합니다.
@@ -71,7 +71,7 @@ public class FxMinTests
     }
 
     [Fact]
-    public void TestEvaluateMinWithNaN()
+    public async void TestEvaluateMinWithNaN()
     {
         // Arrange
         var results = new Dictionary<string, object?>
@@ -80,7 +80,7 @@ public class FxMinTests
         };
 
         // Act
-        var result = Fx.Evaluate("MIN(nanValues)", results);
+        var result = await Fx.EvaluateAsync("MIN(@nanValues)", results);
 
         // Assert
         // NaN 값을 포함하는 배열에서 최소값은 NaN이어야 합니다.

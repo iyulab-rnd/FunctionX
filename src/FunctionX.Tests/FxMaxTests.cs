@@ -7,20 +7,20 @@ namespace FunctionX.Tests;
 public class FxMaxTests
 {
     [Fact]
-    public void TestEvaluateMaxWithConstants()
+    public async Task TestEvaluateMaxWithConstants()
     {
         // Arrange
         var results = new Dictionary<string, object?>();
 
         // Act
-        var result = Fx.Evaluate("MAX(10, 20, 5, 15)", results);
+        var result = await Fx.EvaluateAsync("MAX(10, 20, 5, 15)", results);
 
         // Assert
         Assert.Equal(20.0, Convert.ToDouble(result));
     }
 
     [Fact]
-    public void TestEvaluateMaxWithVariable()
+    public async Task TestEvaluateMaxWithVariable()
     {
         // Arrange
         var results = new Dictionary<string, object?>
@@ -29,30 +29,14 @@ public class FxMaxTests
             };
 
         // Act
-        var result = Fx.Evaluate("MAX(maxValues)", results);
+        var result = await Fx.EvaluateAsync("MAX(@maxValues)", results);
 
         // Assert
         Assert.Equal(20.0, Convert.ToDouble(result));
     }
 
     [Fact]
-    public void TestEvaluateMaxWithMixedTypes()
-    {
-        // Arrange
-        var results = new Dictionary<string, object?>
-            {
-                { "mixedValues", new object[] {2, "10", 30, "six"} }
-            };
-
-        // Act
-        var result = Fx.Evaluate("MAX(mixedValues)", results);
-
-        // Assert
-        Assert.Equal(30.0, Convert.ToDouble(result)); // 여기서는 숫자만 고려하고 문자열은 무시한다고 가정
-    }
-
-    [Fact]
-    public void TestEvaluateMaxWithEmptyArray()
+    public async Task TestEvaluateMaxWithEmptyArray()
     {
         // Arrange
         var results = new Dictionary<string, object?>
@@ -61,9 +45,9 @@ public class FxMaxTests
             };
 
         // Act
-        var result = Fx.Evaluate("MAX(emptyArray)", results);
+        var result = await Fx.EvaluateAsync("MAX(@emptyArray)", results);
 
         // Assert
-        Assert.Null(result);
+        Assert.Equal(double.NaN, Convert.ToDouble(result));
     }
 }

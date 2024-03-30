@@ -1,16 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	<TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
+	<TargetFrameworks>netstandard2.1</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 	<Description>Implements Excel-like formulas, supporting dynamic calculations with variable parameter mapping.</Description>
 	<Title>FunctionX</Title>
 	<PackageProjectUrl>https://github.com/iyulab-rnd/FunctionX</PackageProjectUrl>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="FxFunc.cs" />
+    <Compile Remove="FxLogical.cs" />
+    <Compile Remove="FxText.cs" />
+  </ItemGroup>
 	
 	<ItemGroup>
-		<PackageReference Include="NCalcSync" Version="3.12.0" />
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.9.2" />
 	</ItemGroup>
 
 </Project>
