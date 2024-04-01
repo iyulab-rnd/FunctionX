@@ -1,9 +1,11 @@
 ﻿
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
+using Microsoft.CSharp.RuntimeBinder;
 using System.Collections;
 using System.Diagnostics;
 using System.Reflection;
+using System.Security;
 using System.Text.RegularExpressions;
 namespace FunctionX;
 
@@ -15,18 +17,14 @@ public static partial class Fx
 {
     public static async Task<object?> EvaluateAsync(string expression, IDictionary<string, object?>? parameters = null)
     {
-        if (CheckSafeExpression(expression) == false)
-        {
-            throw new FxException("Unsafe expression");
-        }
-
-        parameters ??= new Dictionary<string, object?>();
-        var functions = new FunctionsX(parameters);
-
-        var script = BuildCsScript(expression, parameters);
-
         try
         {
+            CheckSafeExpression(expression);
+
+            parameters ??= new Dictionary<string, object?>();
+            var functions = new FxFunctions(parameters);
+
+            var script = BuildCsScript(expression, parameters);
 #if DEBUG
             Debug.WriteLine($"Expression: {script}");
 #endif
@@ -39,15 +37,31 @@ public static partial class Fx
         }
         catch (CompilationErrorException ex)
         {
-            throw new FxException($"Compilation error: {ex.Message}");
+            throw new FxCompilationErrorException(ex.Message);
+        }
+        catch (ArgumentException ex)
+        {
+            throw new FxValueException(ex.Message);
+        }
+        catch (SecurityException ex)
+        {
+            throw new FxUnsafeExpressionException(ex.Message); // 보안 관련 예외
+        }
+        catch (InvalidOperationException ex)
+        {
+            throw new FxExpressionException("Invalid operation: " + ex.Message); // 잘못된 연산 예외
+        }
+        catch (RuntimeBinderException ex)
+        {
+            throw new FxExpressionException("Runtime binding error: " + ex.Message); // 바인딩 오류
         }
         catch (FxException)
         {
-            throw;
+            throw; // FxException 유형의 예외는 재발생
         }
         catch (Exception ex)
         {
-            throw new FxException($"Evaluation error: {ex.Message}");
+            throw new FxExpressionException("Unexpected error: " + ex.Message); // 기타 예외
         }
     }
 
@@ -153,7 +167,7 @@ public static partial class Fx
             if (literal.StartsWith("'") && literal.EndsWith("'"))
             {
                 // 홑따옴표 내부의 홑따옴표 이스케이프 처리 (예: 'It\'s fine')
-                var replaced = literal.Substring(1, literal.Length - 2).Replace("\\'", "'");
+                var replaced = literal[1..^1].Replace("\\'", "'");
                 // C# 스타일의 이스케이프로 변환합니다.
                 replaced = replaced.Replace("'", "\\'");
                 // 쌍따옴표로 감싸줍니다.

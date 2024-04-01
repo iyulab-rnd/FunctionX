@@ -74,7 +74,7 @@ public class FxAndTests
             { "var3", false }
         };
 
-        await Assert.ThrowsAsync<FxException>(async () =>
+        await Assert.ThrowsAsync<FxValueException>(async () =>
         {
             var result = await Fx.EvaluateAsync("AND(@var1, @var2, @var3)", parameters);
         });

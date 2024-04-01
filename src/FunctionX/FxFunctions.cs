@@ -2,11 +2,11 @@
 
 namespace FunctionX;
 
-public partial class FunctionsX
+public partial class FxFunctions
 {
     private readonly IDictionary<string, object?> parameters;
 
-    public FunctionsX(IDictionary<string, object?> parameters)
+    public FxFunctions(IDictionary<string, object?> parameters)
     {
         this.parameters = parameters;
     }
@@ -72,6 +72,10 @@ public partial class FunctionsX
 
     public object? GetItem(string name)
     {
+        if (!parameters.ContainsKey(name))
+        {
+            throw new FxReferenceException();
+        }
         return parameters[name];
     }
 
@@ -89,18 +93,33 @@ public partial class FunctionsX
 
     public double GetValue(string name)
     {
-        var v = parameters[name];
-        if (v == null)
-            return double.NaN;
+        if (!parameters.ContainsKey(name))
+        {
+            throw new FxReferenceException(); // #REF! 예외 발생
+        }
 
-        return Convert.ToDouble(v);
+        var value = parameters[name] ?? throw new FxNAException();
+        try
+        {
+            return Convert.ToDouble(value);
+        }
+        catch (System.Exception)
+        {
+            throw new FxValueException(); // #VALUE! 예외 발생
+        }
     }
 
-    // 숫자 타입의 값들의 합을 계산합니다.
     public static double SUM(params object[] values)
     {
-        var numericValues = FilterNumericValues(Flatten(values));
-        return numericValues.Sum();
+        try
+        {
+            var numericValues = FilterNumericValues(Flatten(values));
+            return numericValues.Sum();
+        }
+        catch (System.Exception)
+        {
+            throw new FxValueException();
+        }
     }
 
     public static double AVERAGE(params object[] values)
@@ -168,7 +187,14 @@ public partial class FunctionsX
 
     public static bool AND(params object[] values)
     {
-        return Flatten(values).All(v => v != null && Convert.ToBoolean(v));
+        try
+        {
+            return Flatten(values).All(v => v != null && Convert.ToBoolean(v));
+        }
+        catch (System.Exception)
+        {
+            throw new FxValueException();
+        }
     }
 
     public static bool OR(params object[] values)
@@ -195,7 +221,7 @@ public partial class FunctionsX
     {
         if (values.Length % 2 != 0)
         {
-            throw new ArgumentException("The number of arguments must be even.");
+            throw new FxValueException();
         }
 
         for (int i = 0; i < values.Length; i += 2)
@@ -229,7 +255,7 @@ public partial class FunctionsX
         }
 
         // 모든 케이스를 확인한 후 일치하는 케이스가 없다면, 기본값 반환 (기본값이 제공된 경우)
-        return hasDefaultValue ? casesAndValues[casesAndValues.Length - 1] : null;
+        return hasDefaultValue ? casesAndValues[^1] : null;
     }
 
 
@@ -241,13 +267,17 @@ public partial class FunctionsX
 
     public static string LEFT(object input, object count)
     {
-        if (input is string text)
+        if (input is not string text)
+        {
+            throw new FxValueException(); // #VALUE!
+        }
+        try
         {
             return text[..Math.Min(Convert.ToInt32(count), text.Length)];
         }
-        else
+        catch (System.Exception)
         {
-            return string.Empty;
+            throw new FxValueException(); // #VALUE!
         }
     }
 
@@ -297,24 +327,36 @@ public partial class FunctionsX
 
     public static string PROPER(object input)
     {
-        return input is string text ? CultureInfo.CurrentCulture.TextInfo.ToTitleCase(text.ToLower()) : string.Empty;
+        if (input is not string text)
+        {
+            throw new FxValueException(); // #VALUE!
+        }
+        return CultureInfo.CurrentCulture.TextInfo.ToTitleCase(text.ToLower());
     }
 
     public static string REPLACE(object input, object oldValue, object newValue)
     {
-        return input is string text ? text.Replace(oldValue.ToString(), newValue.ToString()) : string.Empty;
+        if (input is not string text)
+        {
+            throw new FxValueException(); // #VALUE!
+        }
+        try
+        {
+            return text.Replace(oldValue.ToString(), newValue.ToString());
+        }
+        catch (System.Exception)
+        {
+            throw new FxValueException(); // #VALUE!
+        }
     }
 
     public static int LEN(object input)
     {
-        if (input is string text)
+        if (input is not string text)
         {
-            return text.Length;
+            throw new FxValueException(); // #VALUE!
         }
-        else
-        {
-            return 0;
-        }
+        return text.Length;
     }
 
     public static object? INDEX(object[] range, object rowIndexObj, object columnIndexObj)
@@ -324,7 +366,7 @@ public partial class FunctionsX
         // rowIndex는 1부터 시작하는 것을 가정합니다.
         if (rowIndex < 1 || rowIndex > range.Length)
         {
-            return null;
+            throw new FxReferenceException();
         }
 
         var row = range[rowIndex - 1];
@@ -420,7 +462,14 @@ public partial class FunctionsX
 
     public static object[] UNIQUE(params object[] values)
     {
-        return Flatten(values).Distinct().ToArray();
+        try
+        {
+            return Flatten(values).Distinct().ToArray();
+        }
+        catch (System.Exception)
+        {
+            throw new FxExpressionException("Unique expression error.");
+        }
     }
 
     public static int INT(object value)

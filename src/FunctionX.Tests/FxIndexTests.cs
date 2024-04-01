@@ -28,11 +28,10 @@ public class FxIndexTests
         var range = new object[] { new object[] { 1, 2, 3 }, new object[] { 4, 5, 6 }, new object[] { 7, 8, 9 } };
         var parameters = new Dictionary<string, object?> { { "range", range } };
 
-        // Act
-        var result = await Fx.EvaluateAsync("INDEX(@range, 5, 5)", parameters); // 범위를 벗어난 인덱스 조회
-
-        // Assert
-        Assert.Null(result); // 범위를 벗어나는 경우 null을 반환해야 합니다.
+        await Assert.ThrowsAsync<FxReferenceException>(async () =>
+        {
+            var result = await Fx.EvaluateAsync("INDEX(@range, 5, 5)", parameters); // 범위를 벗어난 인덱스 조회
+        });
     }
 
     [Fact]

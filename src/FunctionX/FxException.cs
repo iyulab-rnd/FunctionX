@@ -1,59 +1,86 @@
 ﻿namespace FunctionX;
 
-public class FxException(string message) : Exception(message)
+public abstract class FxException(string message) : Exception(message)
 {
 }
 
 // #DIV/0! 
 public class FxDivideByZeroException : FxException
 {
-    public FxDivideByZeroException() : base("#DIV/0!")
+    public FxDivideByZeroException(string message = "#DIV/0!") : base(message)
     {
     }
+
+    public override string ToString() => "#DIV/0!";
 }
 
 // #VALUE!
 public class FxValueException : FxException
 {
-    public FxValueException() : base("#VALUE!")
+    public FxValueException(string message = "#VALUE!") : base(message)
     {
     }
+
+    public override string ToString() => "#VALUE!";
 }
 
 // #REF!
-public class FxReference : FxException
+public class FxReferenceException : FxException
 {
-    public FxReference() : base("#REF!")
+    public FxReferenceException(string message = "#REF!") : base(message)
     {
     }
+
+    public override string ToString() => "#REF!";
 }
 
 // #NAME?
 public class FxNameException : FxException
 {
-    public FxNameException() : base("#NAME?")
+    public FxNameException(string message = "#NAME?") : base(message)
     {
     }
+
+    public override string ToString() => "#NAME?";
 }
 
 // #NUM!
 public class FxNumException : FxException
 {
-    public FxNumException() : base("#NUM!")
+    public FxNumException(string message = "#NUM!") : base(message)
     {
     }
+
+    public override string ToString() => "#NUM!";
 }
+
 // #N/A
 public class FxNAException : FxException
 {
-    public FxNAException() : base("#N/A")
+    public FxNAException(string message = "#N/A") : base(message)
     {
     }
+
+    public override string ToString() => "#N/A";
 }
 
 public class FxUnsafeExpressionException : FxException
 {
-    public FxUnsafeExpressionException(string keyword) : base($"Unsafe expression: {keyword}")
+    public FxUnsafeExpressionException(string message = "Unsafe expression") : base(message)
+    {
+    }
+}
+
+public class FxExpressionException : FxException
+{
+    public FxExpressionException(string message) : base(message)
+    {
+    }
+}
+
+public class FxCompilationErrorException : FxException
+{
+    public FxCompilationErrorException(string message = $"Compilation Error") : base(message)
     {
     }
 }
