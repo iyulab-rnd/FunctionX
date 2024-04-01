@@ -9,13 +9,13 @@ namespace FunctionX.Tests;
 public class FxIfTests
 {
     [Fact]
-    public async Task TestIfFunction_WhenConditionIsTrue_ReturnTrueValue()
+    public async Task TestIfFunction_Literal()
     {
         // Arrange
         var parameters = new Dictionary<string, object?>();
 
         // Act
-        var result = await Fx.EvaluateAsync("IF(true, \"Yes\", \"No\")", parameters);
+        var result = await Fx.EvaluateAsync("IF(true, 'Yes', \"No I'm fine\")", parameters);
 
         // Assert
         Assert.Equal("Yes", result);

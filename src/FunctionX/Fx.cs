@@ -145,20 +145,26 @@ public static partial class Fx
     /// </summary>
     private static string BuildCsExpression(string expression, IDictionary<string, object?> parameters)
     {
-        var stringLiteralPattern = @"(""[^""]*""|'[^']*')";
-
-        // 문자열 리터럴을 임시 플레이스홀더로 대체하고, 원본 문자열 리터럴을 저장합니다.
         var stringLiterals = new List<string>();
-        var modifiedExpression = Regex.Replace(expression, stringLiteralPattern, match =>
+        var modifiedExpression = Regex.Replace(expression, @"(""([^""\\]|\\.)*""|'([^'\\]|\\.)*')", match =>
         {
-            stringLiterals.Add(match.Value);
-            return $"$stringLiteral${stringLiterals.Count - 1}$"; // 문자열 리터럴 플레이스홀더
+            var literal = match.Value;
+            // 홑따옴표로 둘러싸인 문자열을 쌍따옴표로 변환합니다.
+            if (literal.StartsWith("'") && literal.EndsWith("'"))
+            {
+                // 홑따옴표 내부의 홑따옴표 이스케이프 처리 (예: 'It\'s fine')
+                var replaced = literal.Substring(1, literal.Length - 2).Replace("\\'", "'");
+                // C# 스타일의 이스케이프로 변환합니다.
+                replaced = replaced.Replace("'", "\\'");
+                // 쌍따옴표로 감싸줍니다.
+                literal = $"\"{replaced}\"";
+            }
+            stringLiterals.Add(literal);
+            return $"$stringLiteral${stringLiterals.Count - 1}$";
         });
 
-        // 연산자와 함께 사용되는 변수 참조 변환
         modifiedExpression = TransformVariableReferences(modifiedExpression, parameters);
 
-        // 임시로 대체했던 문자열 리터럴을 원본으로 복원합니다.
         modifiedExpression = Regex.Replace(modifiedExpression, @"\$stringLiteral\$(\d+)\$", match =>
         {
             int index = int.Parse(match.Groups[1].Value);
@@ -167,6 +173,7 @@ public static partial class Fx
 
         return modifiedExpression;
     }
+
 
     private static string TransformVariableReferences(string expression, IDictionary<string, object?> parameters)
     {
