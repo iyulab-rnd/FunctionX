@@ -1,11 +1,10 @@
 # FunctionX
 
-The FunctionX library implements Excel-like formula features in C#. It allows users to manipulate data in ways similar to Excel formulas. The library utilizes the NCalc library for evaluating expressions and supports complex data types to perform various operations.
+The FunctionX library implements Excel-like formula functionality in C#. It allows users to manipulate data in a similar way to Excel formulas. The library runs scripts in the Roslyn compiler to evaluate expressions.
 
 ## Features
 
 The FunctionX library offers the following features:
-
 
 ## Usage
 
@@ -67,6 +66,9 @@ var ifResult = await Fx.EvaluateAsync("IF(@value1 > @value2, \"Yes\", \"No\")", 
 | `INDEX` | Returns the value at a specified position in an array or dictionary. |
 | `VLOOKUP` | Searches for a value in the first column of a range and returns a value in the same row from a specified column. |
 | `UNIQUE` | Returns an array of unique values with duplicates removed. |
+| `IFERROR` | Returns a value if an expression results in an error. |
+
+- [Show Tests](src/FunctionX.Tests)
 
 ## Installation
 

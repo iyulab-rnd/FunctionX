@@ -2,7 +2,7 @@
 
 namespace FunctionX;
 
-public class FunctionsX
+public partial class FunctionsX
 {
     private readonly IDictionary<string, object?> parameters;
 
@@ -421,5 +421,10 @@ public class FunctionsX
     public static object[] UNIQUE(params object[] values)
     {
         return Flatten(values).Distinct().ToArray();
+    }
+
+    public static int INT(object value)
+    {
+        return Convert.ToInt32(value);
     }
 }

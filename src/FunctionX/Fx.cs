@@ -3,7 +3,6 @@ using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
 using System.Collections;
 using System.Diagnostics;
-using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.RegularExpressions;
 namespace FunctionX;
@@ -16,6 +15,11 @@ public static partial class Fx
 {
     public static async Task<object?> EvaluateAsync(string expression, IDictionary<string, object?>? parameters = null)
     {
+        if (CheckSafeExpression(expression) == false)
+        {
+            throw new FxException("Unsafe expression");
+        }
+
         parameters ??= new Dictionary<string, object?>();
         var functions = new FunctionsX(parameters);
 
@@ -37,10 +41,43 @@ public static partial class Fx
         {
             throw new FxException($"Compilation error: {ex.Message}");
         }
+        catch (FxException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             throw new FxException($"Evaluation error: {ex.Message}");
         }
+    }
+
+    private static bool CheckSafeExpression(string expression)
+    {
+        // 금지된 키워드 목록
+        var forbiddenKeywords = new string[] 
+        {
+            "import",
+            "System.IO", "Process", "Assembly", "File", "Directory", "Thread", "Task", "Environment",
+            "Reflection", "DllImport", "Console", "Window", "Registry"
+        };
+
+        // 금지된 키워드가 포함되어 있는지 확인
+        foreach (var keyword in forbiddenKeywords)
+        {
+            if (expression.Contains(keyword))
+            {
+                throw new FxUnsafeExpressionException(keyword);
+            }
+        }
+
+        // 추가적인 보안 위험을 차단하기 위한 정규 표현식 검사
+        var dynamicInvokePattern = new Regex(@"\bGetType\b|\bGetMethod\b|\bGetProperty\b|\bInvokeMember\b");
+        if (dynamicInvokePattern.IsMatch(expression))
+        {
+            throw new FxUnsafeExpressionException("Dynamic invoke");
+        }
+
+        return true; // 위의 모든 검사를 통과하면 true 반환
     }
 
     /// <summary>
@@ -48,10 +85,56 @@ public static partial class Fx
     /// </summary>
     private static string BuildCsScript(string expression, IDictionary<string, object?> parameters)
     {
-        var script = BuildCsExpression(expression, parameters);
-        // IFERROR 구문을 찾아서, try-catch로 변환합니다.
+        var script = TransformToTryCatchBlocks(expression);
+#if DEBUG
+        Debug.WriteLine($"[Logs]");
+        Debug.WriteLine($"input: {expression}");
+        Debug.WriteLine($"output: {script}");
+#endif
+        script = BuildCsExpression(script, parameters);
         return script;
     }
+
+    // IFERROR 함수를 try-catch 블록으로 변환합니다.
+    // 재귀적으로 모든 중첩된 IFERROR 함수도 실행가능한 try-catch 함수로 변환합니다.
+    // 실행가능한 C# 스크립트를 생성하여 반환합니다.
+    // 예)
+    // input: "IFERROR(10 / 5, "ERROR")"
+    // output: "try { return 10 / 5; } catch { return "ERROR"; }"
+    // input2: "IFERROR(INT(@a) / INT(@b), "ERROR")
+    // ouput2: "try { return INT(@a) / INT(@b); } catch { return "ERROR"; }"
+    // input3: "IFERROR(IFERROR(INT(@a) / INT(@b), "ERROR"), "ON ERROR")"
+    // ouput3: "try { return (Func<object>)(() => { try { return INT(@a) / INT(@b); } catch { return "ERROR"; } })(); } catch { return "ON ERROR"; }"
+    public static string TransformToTryCatchBlocks(string input)
+    {
+        return TransformIFERROR(input, false);
+    }
+
+    private static string TransformIFERROR(string input, bool isNested)
+    {
+        var regex = new Regex(@"IFERROR\(((?:[^()]|(?<Open>\()|(?<-Open>\)))+)(?(Open)(?!)),\s*""(?<error>[^""]*)""\)");
+        if (!regex.IsMatch(input))
+        {
+            return input;
+        }
+
+        return regex.Replace(input, match =>
+        {
+            var innerExpression = match.Groups[1].Value;
+            var errorText = match.Groups["error"].Value;
+            var transformedInnerExpression = TransformIFERROR(innerExpression, true);
+
+            if (isNested)
+            {
+                return $"((Func<object>)(() => {{ try {{ return {transformedInnerExpression}; }} catch {{ return \"{errorText}\"; }} }}))()";
+            }
+            else
+            {
+                return $"try {{ return {transformedInnerExpression}; }} catch {{ return \"{errorText}\"; }}";
+            }
+        });
+    }
+
 
     /// <summary>
     /// @변수를 적절한 Get함수로 치환합니다.
@@ -62,7 +145,6 @@ public static partial class Fx
     /// </summary>
     private static string BuildCsExpression(string expression, IDictionary<string, object?> parameters)
     {
-        // 문자열 리터럴 패턴: "..." 또는 '...'를 찾습니다.
         var stringLiteralPattern = @"(""[^""]*""|'[^']*')";
 
         // 문자열 리터럴을 임시 플레이스홀더로 대체하고, 원본 문자열 리터럴을 저장합니다.
