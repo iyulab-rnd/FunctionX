@@ -2,23 +2,37 @@
 
 public static class MyFunctions
 {
-    public static double MyFunc(double x, double y)
+    public static double MyFunc(object x, object y)
     {
-        return (x + y) * 2;
+        var x1 = Convert.ToDouble(x);
+        var y1 = Convert.ToDouble(y);
+        return (x1 + y1) * 2.0;
     }
 }
 
 public class FxCustomFuncTests
 {
     [Fact]
-    public async Task TestXorFunction_WithOneTrueOneFalse_ReturnsTrue()
+    public async Task MyFuncTest()
     {
+        var x = 1.0;
+        var y = 2.0;
+
+        var parameters = new Dictionary<string, object?>
+        {
+            { "x", x },
+            { "y", y }
+        };
+
         // Act
         var result = await Fx.EvaluateAsync(
-            expression: "MyFunctions.MyFunc(1, 2)", 
+            expression: "MyFunctions.MyFunc(@x, @y) + 5", 
+            parameters: parameters,
             customFuncType: typeof(MyFunctions));
 
         // Assert
-        Assert.Equal((1.0 + 2.0) * 2.0, result);
+        var r1 = (x + y) * 2.0;
+        var r2 = r1 + 5;
+        Assert.Equal(r2, result);
     }
 }
