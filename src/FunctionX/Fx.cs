@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Security;
 using System.Text.RegularExpressions;
+
 namespace FunctionX;
 
 /// <summary>
@@ -15,7 +16,10 @@ namespace FunctionX;
 /// </summary>
 public static partial class Fx
 {
-    public static async Task<object?> EvaluateAsync(string expression, IDictionary<string, object?>? parameters = null)
+    public static async Task<object?> EvaluateAsync(
+        string expression, 
+        IDictionary<string, object?>? parameters = null,
+        Type? customFuncType = null)
     {
         try
         {
@@ -31,6 +35,13 @@ public static partial class Fx
             var options = ScriptOptions.Default
                     .WithImports("System", "System.Linq")
                     .AddReferences(Assembly.Load("System.Core"));
+
+            if (customFuncType != null)
+            {
+                options = options
+                    .AddReferences(customFuncType.Assembly)
+                    .WithImports(customFuncType.Namespace);
+            }
 
             var result = await CSharpScript.EvaluateAsync(script, options, globals: functions);
             return result;
