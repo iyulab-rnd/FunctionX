@@ -68,20 +68,16 @@ var ifResult = await Fx.EvaluateAsync("IF(@value1 > @value2, \"Yes\", \"No\")", 
 | `UNIQUE` | Returns an array of unique values with duplicates removed. |
 | `IFERROR` | Returns a value if an expression results in an error. |
 
-- [Show Tests](src/FunctionX.Tests)
+- [Show Tests](src/FunctionX.Tests) : You can find the functions you need in your tests.
 
 ## Installation
 
-This library is not currently available via NuGet. To use the library, you will need to download the source code directly and include it in your project.
+This library can be installed via NuGet. Use the following command to install:
 
-## Requirements
-
-- netstandard2.1
+```bash
+dotnet add package FunctionX
+```
 
 ## Contributing
 
 FunctionX is an open-source project. If you would like to contribute, please send a pull request or file an issue.
-
-## License
-
-The FunctionX library is provided under the MIT license.
